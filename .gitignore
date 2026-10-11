@@ -1,3 +1,6 @@
+.venv/
+__pycache__/
+src/teachers.json
 # Compiled source #
 ###################
 *.com
