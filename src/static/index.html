@@ -10,6 +10,7 @@
     <header>
       <h1>Mergington High School</h1>
       <h2>Extracurricular Activities</h2>
+      <button id="auth-button" class="auth-button" type="button">Teacher sign in</button>
     </header>
 
     <main>
@@ -22,8 +23,9 @@
       </section>
 
       <section id="signup-container">
-        <h3>Sign Up for an Activity</h3>
-        <form id="signup-form">
+        <h3>Teacher tools</h3>
+        <p id="signup-restriction">Sign in as a teacher to manage student registrations.</p>
+        <form id="signup-form" class="hidden">
           <div class="form-group">
             <label for="email">Student Email:</label>
             <input type="email" id="email" required placeholder="your-email@mergington.edu" />
@@ -40,6 +42,25 @@
         <div id="message" class="hidden"></div>
       </section>
     </main>
+
+    <dialog id="login-dialog" aria-labelledby="login-title">
+      <form id="login-form">
+        <h3 id="login-title">Teacher sign in</h3>
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input id="username" name="username" autocomplete="username" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required />
+        </div>
+        <div id="login-message" class="hidden" role="alert"></div>
+        <div class="dialog-actions">
+          <button id="close-login" type="button" class="secondary-button">Cancel</button>
+          <button type="submit">Sign in</button>
+        </div>
+      </form>
+    </dialog>
 
     <footer>
       <p>&copy; 2026 Mergington High School</p>

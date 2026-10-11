@@ -1,36 +1,68 @@
 # Mergington High School Activities API
 
-A super simple FastAPI application that allows students to view and sign up for extracurricular activities.
+A FastAPI application for viewing extracurricular activities. Teachers sign in to register or unregister students; visitors can browse activities and participant lists without signing in.
 
 ## Features
 
 - View all available extracurricular activities
-- Sign up for activities
+- Browse activities and participant lists without signing in
+- Teacher-only student registration and removal
+- Eight-hour teacher sessions in signed, HTTP-only cookies
 
 ## Getting Started
 
 1. Install the dependencies:
 
    ```
-   pip install fastapi uvicorn
+   pip install -r requirements.txt
    ```
 
-2. Run the application:
+2. Create a local teacher credentials file from the example:
 
    ```
-   python app.py
+   cp src/teachers.example.json src/teachers.json
    ```
 
-3. Open your browser and go to:
+   Generate a salted password hash and add the resulting object to the `teachers` array:
+
+   ```python
+   import getpass
+   import hashlib
+   import secrets
+
+   username = input("Teacher username: ")
+   password = getpass.getpass("Teacher password: ").encode()
+   salt = secrets.token_bytes(16)
+   password_hash = hashlib.pbkdf2_hmac("sha256", password, salt, 310_000).hex()
+   print({"username": username, "salt": salt.hex(), "password_hash": password_hash})
+   ```
+
+   `src/teachers.json` is local and ignored by Git. Keep it private and assign a unique password to each teacher.
+
+3. Set a persistent session signing secret and run the application:
+
+   ```sh
+   export SESSION_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+   uvicorn src.app:app --reload
+   ```
+
+   For HTTPS deployments, set `COOKIE_SECURE=true`. Do not enable it for local HTTP development.
+
+4. Open your browser and go to:
    - API documentation: http://localhost:8000/docs
    - Alternative documentation: http://localhost:8000/redoc
+   - Activities page: http://localhost:8000/
 
 ## API Endpoints
 
 | Method | Endpoint                                                          | Description                                                         |
 | ------ | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
 | GET    | `/activities`                                                     | Get all activities with their details and current participant count |
-| POST   | `/activities/{activity_name}/signup?email=student@mergington.edu` | Sign up for an activity                                             |
+| POST   | `/auth/login`                                                      | Sign in as a teacher and start a session                             |
+| GET    | `/auth/session`                                                    | Get the current teacher session                                     |
+| DELETE | `/auth/session`                                                    | Sign out                                                            |
+| POST   | `/activities/{activity_name}/signup?email=student@mergington.edu` | Register a student (teacher session required)                       |
+| DELETE | `/activities/{activity_name}/unregister?email=student@mergington.edu` | Unregister a student (teacher session required)                  |
 
 ## Data Model
 
@@ -47,4 +79,4 @@ The application uses a simple data model with meaningful identifiers:
    - Name
    - Grade level
 
-All data is stored in memory, which means data will be reset when the server restarts.
+Activity and participant data is stored in memory and resets when the server restarts. Teacher credentials are stored locally in `src/teachers.json` as PBKDF2 hashes; the template is `src/teachers.example.json`.
